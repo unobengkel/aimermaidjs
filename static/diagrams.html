@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Diagram - Mermaid AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        .canvas-container { overflow: hidden; position: relative; touch-action: none; cursor: grab; background-color: #f1f5f9; }
+        .canvas-container:active { cursor: grabbing; }
+        .canvas-wrapper { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+        canvas { display: block; max-width: none; transform-origin: center center; will-change: transform; }
+    </style>
+</head>
+<body class="bg-slate-50 flex h-screen overflow-hidden">
+
+    <!-- Mobile Menu Button -->
+    <button id="mobileMenuBtn" class="md:hidden fixed top-4 left-4 z-50 p-2 bg-blue-900 text-white rounded-lg shadow-lg">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+    </button>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/50 z-30 hidden md:hidden"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="bg-blue-900 text-white w-64 flex-shrink-0 fixed md:static h-full inset-y-0 left-0 z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 flex flex-col shadow-2xl">
+        <div class="p-6">
+            <h1 class="text-xl font-bold flex items-center gap-2">
+                <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                Mermaid AI
+            </h1>
+            <p class="text-xs text-blue-300 mt-1">Client-Server Edition</p>
+        </div>
+        <nav class="flex-grow flex flex-col gap-1 px-4">
+            <a href="/static/index.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 hover:bg-blue-800 transition-colors font-medium text-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                AI Editor
+            </a>
+            <a href="/static/diagrams.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 hover:bg-blue-800 transition-colors font-medium text-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                Daftar Diagram
+            </a>
+            <a href="/static/documents.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 hover:bg-blue-800 transition-colors font-medium text-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                Pustaka Dokumen RAG
+            </a>
+            <a href="/static/documentation.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 hover:bg-blue-800 transition-colors font-medium text-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                Dokumentasi
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 min-w-0 flex flex-col overflow-hidden relative">
+        <header class="bg-white border-b border-slate-200 p-4 sm:px-6 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between pl-14 sm:pl-16 md:pl-6 gap-3">
+            <div>
+                <h2 class="text-xl font-bold text-slate-800">Daftar Diagram</h2>
+                <p class="text-xs text-slate-500">Kumpulan diagram yang telah disimpan</p>
+            </div>
+            <!-- Search Panel -->
+            <div class="flex gap-2">
+                <input type="date" id="dateFilter" class="p-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500">
+                <input type="text" id="searchInput" placeholder="Cari diagram..." class="p-2 border border-slate-300 rounded-lg text-sm w-full sm:w-48 outline-none focus:border-blue-500">
+            </div>
+        </header>
+
+        <div class="flex-grow overflow-y-auto p-4 md:p-6 pb-24">
+            <!-- Table Panel -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
+                                <th class="p-4 font-medium">No</th>
+                                <th class="p-4 font-medium">Tanggal / Waktu</th>
+                                <th class="p-4 font-medium">Nama Diagram</th>
+                                <th class="p-4 font-medium text-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="diagramTable" class="text-sm divide-y divide-slate-100">
+                            <!-- Data -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="loadingIndicator" class="p-8 text-center text-slate-500">Memuat data...</div>
+                <div id="emptyState" class="p-8 text-center text-slate-400 hidden">Tidak ada diagram yang ditemukan.</div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Diagram Preview Modal -->
+    <div id="previewModal" class="fixed inset-0 modal-overlay z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-50 rounded-2xl shadow-xl w-full max-w-4xl max-h-full flex flex-col fade-in border border-slate-200">
+            <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-white rounded-t-2xl">
+                <h3 id="modalTitle" class="font-bold text-lg text-slate-800">Preview Diagram</h3>
+                <button onclick="hideModal('previewModal')" class="text-slate-500 hover:text-slate-800">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-6 overflow-hidden flex flex-col gap-4 flex-grow min-h-0">
+                <div class="relative flex-grow bg-slate-100 border border-slate-300 rounded overflow-hidden flex flex-col">
+                    <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20 bg-white/90 backdrop-blur shadow rounded-full border border-slate-200 flex items-center px-2 py-1 gap-1">
+                        <button id="zoomOutBtn" class="p-1 px-2 text-slate-600 hover:text-blue-600 rounded-full text-lg">-</button>
+                        <span id="zoomLevelDisplay" class="text-xs font-bold text-slate-700 min-w-[3rem] text-center">100%</span>
+                        <button id="zoomInBtn" class="p-1 px-2 text-slate-600 hover:text-blue-600 rounded-full text-lg">+</button>
+                        <div class="w-px h-4 bg-slate-300 mx-1"></div>
+                        <button id="zoomResetBtn" class="p-1 text-xs font-semibold text-slate-600 hover:text-blue-600 px-2">Reset</button>
+                    </div>
+                
+                    <div id="canvasContainer" class="canvas-container w-full h-full" style="height: 50vh;">
+                        <div class="canvas-wrapper">
+                            <div id="renderStatus" class="absolute inset-0 flex items-center justify-center text-slate-500 bg-white z-10 w-full h-full font-medium">Merender Preview...</div>
+                            <canvas id="previewCanvas" class="bg-white shadow-sm hidden"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 border-t border-slate-200 bg-white rounded-b-2xl flex justify-end gap-3">
+                <button onclick="hideModal('previewModal')" class="px-5 py-2 text-sm bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg transition-colors font-medium">Tutup</button>
+                <button id="downloadBtn" class="px-5 py-2 text-sm bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors font-medium shadow-sm flex-shrink-0 disabled:opacity-50">Unduh PNG</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="/static/app.js"></script>
+    <script>
+        const diagramTable = document.getElementById('diagramTable');
+        const emptyState = document.getElementById('emptyState');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const searchInput = document.getElementById('searchInput');
+        const dateFilter = document.getElementById('dateFilter');
+        let allDiagrams = [];
+
+        mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
+
+        async function fetchDiagrams() {
+            diagramTable.innerHTML = '';
+            loadingIndicator.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            
+            try {
+                const res = await fetch('/api/diagrams');
+                allDiagrams = await res.json();
+                loadingIndicator.classList.add('hidden');
+                
+                renderTable();
+            } catch (error) {
+                loadingIndicator.classList.add('hidden');
+                showAlert('Gagal memuat diagram', 'error');
+            }
+        }
+
+        function renderTable() {
+            const query = searchInput.value.toLowerCase();
+            const dateQuery = dateFilter.value;
+            diagramTable.innerHTML = '';
+
+            const filteredData = allDiagrams.filter(d => {
+                const isNameMatch = d.name.toLowerCase().includes(query);
+                const isDateMatch = dateQuery ? d.created_at.startsWith(dateQuery) : true;
+                return isNameMatch && isDateMatch;
+            });
+
+            if (filteredData.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            filteredData.forEach((doc, index) => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-slate-50 transition-colors';
+                const dateObj = new Date(doc.created_at);
+                
+                // Disimpan dalam attribute base64 agar aman parsing string quotes panjang
+                const encodedCode = btoa(unescape(encodeURIComponent(doc.mermaid_code)));
+
+                row.innerHTML = `
+                    <td class="p-4 text-slate-500">${index + 1}</td>
+                    <td class="p-4">
+                        <div class="text-slate-800">${dateObj.toLocaleDateString('id-ID')}</div>
+                        <div class="text-xs text-slate-400">${dateObj.toLocaleTimeString('id-ID')}</div>
+                    </td>
+                    <td class="p-4 font-medium text-slate-700">${doc.name}</td>
+                    <td class="p-4 text-right">
+                        <div class="flex items-center justify-end gap-1">
+                            <button onclick="previewDiagram('${doc.name}', '${encodedCode}')" class="text-blue-500 hover:text-blue-700 hover:bg-blue-50 p-2 rounded transition-colors" title="Preview">
+                                <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            </button>
+                            <a href="/static/index.html?id=${doc.id}" class="text-amber-500 hover:text-amber-700 hover:bg-amber-50 p-2 rounded transition-colors" title="Edit">
+                                <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                            </a>
+                            <button onclick="deleteDiagram(${doc.id})" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded transition-colors" title="Hapus">
+                                <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                diagramTable.appendChild(row);
+            });
+        }
+
+        searchInput.addEventListener('input', renderTable);
+        dateFilter.addEventListener('change', renderTable);
+
+        async function deleteDiagram(id) {
+            if(!confirm('Hapus diagram ini secara permanen?')) return;
+            try {
+                const res = await fetch(`/api/diagrams/${id}`, { method: 'DELETE' });
+                if(res.ok) {
+                    showAlert('Diagram terhapus');
+                    fetchDiagrams();
+                } else {
+                    showAlert('Gagal menghapus diagram', 'error');
+                }
+            } catch (err) {
+                showAlert('Terjadi kesalahan', 'error');
+            }
+        }
+
+
+        // Pan & Zoom Logic
+        const canvasContainer = document.getElementById('canvasContainer');
+        const zoomInBtn = document.getElementById('zoomInBtn');
+        const zoomOutBtn = document.getElementById('zoomOutBtn');
+        const zoomResetBtn = document.getElementById('zoomResetBtn');
+        const zoomLevelDisplay = document.getElementById('zoomLevelDisplay');
+        const previewCanvas = document.getElementById('previewCanvas');
+        const renderStatusDiv = document.getElementById('renderStatus');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        let currentZoom = 1; let translateX = 0; let translateY = 0; let isDragging = false; let startX, startY;
+        let initialPinchDist = null; let initialZoom = 1;
+
+        function applyTransform() {
+            currentZoom = Math.max(0.1, Math.min(currentZoom, 5));
+            zoomLevelDisplay.innerText = Math.round(currentZoom * 100) + '%';
+            previewCanvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentZoom})`;
+        }
+        function resetView() { currentZoom = 1; translateX = 0; translateY = 0; applyTransform(); }
+
+        zoomInBtn.onclick = () => { currentZoom += 0.2; applyTransform(); };
+        zoomOutBtn.onclick = () => { currentZoom -= 0.2; applyTransform(); };
+        zoomResetBtn.onclick = resetView;
+
+        canvasContainer.addEventListener('mousedown', (e) => { isDragging = true; startX = e.clientX - translateX; startY = e.clientY - translateY; canvasContainer.style.cursor = 'grabbing'; });
+        window.addEventListener('mousemove', (e) => { if(!isDragging) return; translateX = e.clientX - startX; translateY = e.clientY - startY; applyTransform(); });
+        window.addEventListener('mouseup', () => { isDragging = false; canvasContainer.style.cursor = 'grab'; });
+        canvasContainer.addEventListener('wheel', (e) => { e.preventDefault(); currentZoom += (e.deltaY > 0 ? -0.1 : 0.1); applyTransform(); });
+        
+        canvasContainer.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) { isDragging = true; startX = e.touches[0].clientX - translateX; startY = e.touches[0].clientY - translateY; }
+            else if (e.touches.length === 2) { isDragging = false; initialPinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); initialZoom = currentZoom; }
+        }, {passive: false});
+
+        canvasContainer.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (e.touches.length === 1 && isDragging) { translateX = e.touches[0].clientX - startX; translateY = e.touches[0].clientY - startY; applyTransform(); }
+            else if (e.touches.length === 2 && initialPinchDist) { const currentDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); currentZoom = initialZoom * (currentDist / initialPinchDist); applyTransform(); }
+        }, {passive: false});
+
+        canvasContainer.addEventListener('touchend', (e) => {
+            if (e.touches.length < 2) initialPinchDist = null;
+            if (e.touches.length === 0) isDragging = false;
+            else if (e.touches.length === 1) { startX = e.touches[0].clientX - translateX; startY = e.touches[0].clientY - translateY; isDragging = true; }
+        });
+
+        async function previewDiagram(name, encodedCode) {
+            document.getElementById('modalTitle').textContent = `Preview: ${name}`;
+            const code = decodeURIComponent(escape(atob(encodedCode)));
+            showModal('previewModal');
+            
+            resetView();
+            previewCanvas.classList.add('hidden');
+            renderStatusDiv.classList.remove('hidden');
+            renderStatusDiv.innerText = "Merender Diagram...";
+            downloadBtn.disabled = true;
+
+            setTimeout(async () => {
+                try {
+                    const ctx = previewCanvas.getContext('2d');
+                    
+                    const id = `mermaid-prev-${Date.now()}`;
+                    const { svg } = await mermaid.render(id, code);
+
+                    const parser = new DOMParser();
+                    const svgDoc = parser.parseFromString(svg, "image/svg+xml");
+                    const svgElement = svgDoc.documentElement;
+
+                    if (!svgElement.getAttribute('xmlns')) {
+                        svgElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                    }
+
+                    let svgWidth = parseFloat(svgElement.getAttribute('width')) || 800;
+                    let svgHeight = parseFloat(svgElement.getAttribute('height')) || 600;
+                    const viewBox = svgElement.getAttribute('viewBox');
+                    if (viewBox) {
+                        const parts = viewBox.split(' ');
+                        if (parts.length === 4) {
+                            svgWidth = parseFloat(parts[2]);
+                            svgHeight = parseFloat(parts[3]);
+                        }
+                    }
+
+                    svgElement.setAttribute('width', `${svgWidth}px`);
+                    svgElement.setAttribute('height', `${svgHeight}px`);
+
+                    const serializer = new XMLSerializer();
+                    const base64Svg = btoa(unescape(encodeURIComponent(serializer.serializeToString(svgElement))));
+                    const url = `data:image/svg+xml;base64,${base64Svg}`;
+
+                    const padding = 30;
+                    const img = new Image();
+                    img.onload = () => {
+                        const dpr = window.devicePixelRatio || 1;
+                        previewCanvas.width = (svgWidth + padding * 2) * dpr;
+                        previewCanvas.height = (svgHeight + padding * 2) * dpr;
+                        previewCanvas.style.width = `${svgWidth + padding * 2}px`;
+                        previewCanvas.style.height = `${svgHeight + padding * 2}px`;
+                        ctx.scale(dpr, dpr);
+                        
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, svgWidth + padding * 2, svgHeight + padding * 2);
+                        ctx.drawImage(img, padding, padding, svgWidth, svgHeight);
+                        renderStatusDiv.classList.add('hidden');
+                        previewCanvas.classList.remove('hidden');
+                        downloadBtn.disabled = false;
+                        
+                        downloadBtn.onclick = () => {
+                            const link = document.createElement('a');
+                            link.download = `${name.replace(/\s+/g,'_')}.png`;
+                            link.href = previewCanvas.toDataURL('image/png');
+                            link.click();
+                        };
+                    };
+                    img.src = url;
+
+                } catch (err) {
+                    renderStatusDiv.innerText = "Error merender diagram: " + err.message;
+                }
+            }, 50);
+        }
+
+        // Initial Load
+        fetchDiagrams();
+    </script>
+</body>
+</html>

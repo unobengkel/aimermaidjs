@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Dokumen RAG - Mermaid AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="bg-slate-50 flex h-screen overflow-hidden">
+
+    <!-- Mobile Menu Button -->
+    <button id="mobileMenuBtn" class="md:hidden fixed top-4 left-4 z-50 p-2 bg-blue-900 text-white rounded-lg shadow-lg">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+    </button>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/50 z-30 hidden md:hidden"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="bg-blue-900 text-white w-64 flex-shrink-0 fixed md:static h-full inset-y-0 left-0 z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 flex flex-col shadow-2xl">
+        <div class="p-6">
+            <h1 class="text-xl font-bold flex items-center gap-2">
+                <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                Mermaid AI
+            </h1>
+            <p class="text-xs text-blue-300 mt-1">Client-Server Edition</p>
+        </div>
+        <nav class="flex-grow flex flex-col gap-1 px-4">
+            <a href="/static/index.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 hover:bg-blue-800 transition-colors font-medium text-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                AI Editor
+            </a>
+            <a href="/static/diagrams.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 hover:bg-blue-800 transition-colors font-medium text-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                Daftar Diagram
+            </a>
+            <a href="/static/documents.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 hover:bg-blue-800 transition-colors font-medium text-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                Pustaka Dokumen RAG
+            </a>
+            <a href="/static/documentation.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 hover:bg-blue-800 transition-colors font-medium text-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                Dokumentasi
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 min-w-0 flex flex-col overflow-hidden relative">
+        <header class="bg-white border-b border-slate-200 p-4 sm:px-6 sm:py-4 flex items-center justify-between pl-14 sm:pl-16 md:pl-6">
+            <div>
+                <h2 class="text-xl font-bold text-slate-800">Manajemen Dokumen</h2>
+                <p class="text-xs text-slate-500">Unggah Data PDF/TXT sebagai konteks referensi AI (RAG)</p>
+            </div>
+        </header>
+
+        <div class="flex-grow overflow-y-auto p-4 md:p-6 pb-24">
+            
+            <!-- Upload Panel -->
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 mb-6">
+                <h3 class="font-semibold text-slate-700 mb-3 text-sm">Unggah Dokumen Baru</h3>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <input type="file" id="fileInput" accept=".pdf,.txt" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer border border-slate-200 rounded-lg">
+                    <button id="uploadBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm whitespace-nowrap disabled:opacity-50 flex items-center justify-center">
+                        <span id="uploadText">Unggah File</span>
+                    </button>
+                </div>
+                <p class="text-xs text-slate-400 mt-2">Hanya mendukung format .pdf dan .txt. Sistem otomatis melakukan chunking & vektorisasi.</p>
+            </div>
+
+            <!-- Table Panel -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
+                                <th class="p-4 font-medium">No</th>
+                                <th class="p-4 font-medium">Tanggal / Waktu</th>
+                                <th class="p-4 font-medium">Nama File</th>
+                                <th class="p-4 font-medium">Tipe</th>
+                                <th class="p-4 font-medium text-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="documentTable" class="text-sm divide-y divide-slate-100">
+                            <!-- Data Will Load Here via JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="loadingIndicator" class="p-8 text-center text-slate-500 hidden">Memuat data...</div>
+                <div id="emptyState" class="p-8 text-center text-slate-400 hidden">Belum ada dokumen yang diunggah.</div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="/static/app.js"></script>
+    <script>
+        const documentTable = document.getElementById('documentTable');
+        const emptyState = document.getElementById('emptyState');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const fileInput = document.getElementById('fileInput');
+
+        async function fetchDocuments() {
+            documentTable.innerHTML = '';
+            loadingIndicator.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            
+            try {
+                const res = await fetch('/api/documents');
+                const data = await res.json();
+                loadingIndicator.classList.add('hidden');
+
+                if (data.length === 0) {
+                    emptyState.classList.remove('hidden');
+                    return;
+                }
+
+                data.forEach((doc, index) => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-slate-50 transition-colors';
+                    const dateObj = new Date(doc.created_at);
+                    
+                    row.innerHTML = `
+                        <td class="p-4 text-slate-500">${index + 1}</td>
+                        <td class="p-4">
+                            <div class="text-slate-800">${dateObj.toLocaleDateString('id-ID')}</div>
+                            <div class="text-xs text-slate-400">${dateObj.toLocaleTimeString('id-ID')}</div>
+                        </td>
+                        <td class="p-4 font-medium text-slate-700">${doc.filename}</td>
+                        <td class="p-4 text-slate-500 uppercase text-xs">${doc.file_type.replace('.','')}</td>
+                        <td class="p-4 text-right">
+                            <button onclick="deleteDocument(${doc.id})" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded transition-colors" title="Hapus Dokumen">
+                                <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </td>
+                    `;
+                    documentTable.appendChild(row);
+                });
+
+            } catch (error) {
+                loadingIndicator.classList.add('hidden');
+                showAlert('Gagal memuat dokumen', 'error');
+            }
+        }
+
+        async function deleteDocument(id) {
+            if(!confirm('Anda yakin ingin menghapus data vektor dokumen ini?')) return;
+            try {
+                const res = await fetch(`/api/documents/${id}`, { method: 'DELETE' });
+                if(res.ok) {
+                    showAlert('Dokumen berhasil dihapus');
+                    fetchDocuments();
+                } else {
+                    const err = await res.json();
+                    showAlert(err.detail || 'Gagal menghapus dokumen', 'error');
+                }
+            } catch (err) {
+                showAlert('Terjadi kesalahan', 'error');
+            }
+        }
+
+        uploadBtn.addEventListener('click', async () => {
+            const file = fileInput.files[0];
+            if (!file) {
+                showAlert('Pilih file terlebih dahulu!', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            uploadBtn.disabled = true;
+            document.getElementById('uploadText').innerText = 'Memproses...';
+
+            try {
+                const res = await fetch('/api/documents', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (res.ok) {
+                    showAlert('Dokumen berhasil diunggah & divektorisasi');
+                    fileInput.value = '';
+                    fetchDocuments();
+                } else {
+                    const err = await res.json();
+                    showAlert(err.detail || 'Gagal memproses dokumen', 'error');
+                }
+            } catch (err) {
+                showAlert('Terjadi kesalahan fatal', 'error');
+            } finally {
+                uploadBtn.disabled = false;
+                document.getElementById('uploadText').innerText = 'Unggah File';
+            }
+        });
+
+        // Initial Load
+        fetchDocuments();
+    </script>
+</body>
+</html>

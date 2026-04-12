@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mermaid AI Editor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+    
+    <!-- Marked.js untuk Markdown parsing di Chat -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- KaTeX untuk LaTeX parsing -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+        /* Container Canvas - Dibuat layaknya aplikasi native */
+        .canvas-container {
+            overflow: hidden; /* Sembunyikan scrollbar, kita pakai geser manual */
+            position: relative;
+            touch-action: none; /* PENTING: Mencegah scroll browser / pull-to-refresh di HP */
+            cursor: grab;
+            background-color: #f1f5f9;
+        }
+        .canvas-container:active {
+            cursor: grabbing;
+        }
+        .canvas-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+        canvas {
+            display: block;
+            max-width: none;
+            transform-origin: center center;
+            will-change: transform; /* Optimasi hardware acceleration */
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Scrollbar Custom */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
+        textarea::-webkit-scrollbar-track { background: #0f172a; }
+        textarea::-webkit-scrollbar-thumb { background-color: #4b5563; }
+
+        /* Styling Markdown dalam Chat */
+        .markdown-body p { margin-bottom: 0.5em; }
+        .markdown-body pre {
+            background-color: #1e293b;
+            color: #e2e8f0;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 0.5rem 0;
+            font-size: 0.85em;
+            position: relative;
+        }
+        .markdown-body code { font-family: monospace; background-color: #f1f5f9; color: #ef4444; padding: 0.1rem 0.3rem; border-radius: 0.25rem; font-size: 0.9em; }
+        .markdown-body pre code { background-color: transparent; color: inherit; padding: 0; }
+        
+        /* Tombol apply code */
+        .apply-code-btn {
+            display: block;
+            width: 100%;
+            margin-top: 0.5rem;
+            padding: 0.4rem;
+            background-color: #3b82f6;
+            color: white;
+            text-align: center;
+            border-radius: 0.375rem;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .apply-code-btn:hover { background-color: #2563eb; }
+
+        /* Chat Widget Styles */
+        #chatWidget {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: bottom right;
+        }
+        .chat-hidden {
+            opacity: 0;
+            transform: scale(0.9) translateY(20px);
+            pointer-events: none;
+        }
+        .chat-visible {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 h-screen flex flex-col p-3 sm:p-4 md:p-6 lg:p-8 font-sans text-slate-800 overflow-x-hidden relative">
+
+    <div class="max-w-[1600px] w-full mx-auto flex flex-col h-full gap-4 md:gap-6">
+        
+        <!-- Header -->
+        <header class="border-b border-slate-200 pb-3 md:pb-4 flex-shrink-0 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-slate-900 leading-tight">Mermaid.js AI Editor</h1>
+                <p class="text-sm md:text-base text-slate-600 mt-1">Buat diagram dengan bantuan DeepSeek AI</p>
+            </div>
+        </header>
+
+        <!-- Pesan Error -->
+        <div id="errorMessage" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-3 md:p-4 rounded shadow-sm flex-shrink-0" role="alert">
+            <p class="font-bold flex items-center text-sm md:text-base">
+                <svg class="w-4 h-4 md:w-5 md:h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                Terjadi Kesalahan!
+            </p>
+            <p id="errorText" class="text-xs md:text-sm mt-1 ml-6 md:ml-7">Silakan periksa kembali kode Anda.</p>
+        </div>
+
+        <!-- Layout Utama -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 flex-grow min-h-0">
+            
+            <!-- Panel Editor -->
+            <div class="bg-white p-3 md:p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col h-full">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 gap-3 sm:gap-0">
+                    <label for="mermaidCode" class="font-semibold text-slate-700 flex items-center text-sm md:text-base">
+                        <svg class="w-4 h-4 md:w-5 md:h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                        Editor Kode
+                    </label>
+                    <button id="renderBtn" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 md:px-5 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm disabled:opacity-50">
+                        Render ke Canvas
+                    </button>
+                </div>
+                <textarea id="mermaidCode" class="w-full flex-grow p-3 md:p-4 bg-slate-900 text-green-400 border-0 rounded-lg font-mono text-xs md:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none min-h-[300px] lg:min-h-0 shadow-inner" spellcheck="false">
+graph TD
+    A[Pengguna] -->|Meminta Diagram| B(AI Chatbot)
+    B -->|Generate Kode| C{Mermaid Code}
+    C -->|Klik Terapkan| D[Editor]
+    D -->|Otomatis| E[Canvas Render]
+                </textarea>
+            </div>
+
+            <!-- Panel Canvas -->
+            <div class="bg-white p-3 md:p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col h-full relative">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 gap-3 sm:gap-0">
+                    <h2 class="font-semibold text-slate-700 flex items-center text-sm md:text-base">
+                        <svg class="w-4 h-4 md:w-5 md:h-5 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        Hasil Render
+                    </h2>
+                    <button id="downloadBtn" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-4 md:px-5 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm disabled:opacity-50">
+                        Unduh PNG
+                    </button>
+                </div>
+                
+                <!-- Wrapper Canvas dan Toolbar Zoom -->
+                <div class="relative flex-grow bg-slate-100 border border-slate-300 rounded-lg min-h-[300px] lg:min-h-0 overflow-hidden flex flex-col">
+                    
+                    <!-- Toolbar Zoom Mengambang -->
+                    <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20 bg-white/90 backdrop-blur shadow-md rounded-full border border-slate-200 flex items-center px-2 py-1 gap-1">
+                        <button id="zoomOutBtn" class="p-1.5 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors" title="Perkecil">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"></path></svg>
+                        </button>
+                        <span id="zoomLevelDisplay" class="text-xs font-bold text-slate-700 min-w-[3rem] text-center select-none">100%</span>
+                        <button id="zoomInBtn" class="p-1.5 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors" title="Perbesar">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+                        </button>
+                        <div class="w-px h-4 bg-slate-300 mx-1"></div>
+                        <button id="zoomResetBtn" class="p-1.5 text-xs font-semibold text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors px-3" title="Pusatkan">Reset</button>
+                    </div>
+
+                    <div id="loadingOverlay" class="absolute inset-0 bg-slate-100/90 flex flex-col items-center justify-center z-30 hidden backdrop-blur-sm">
+                        <svg class="animate-spin h-10 w-10 text-blue-600 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span class="text-blue-800 font-semibold animate-pulse text-sm">Memproses Diagram...</span>
+                    </div>
+
+                    <!-- Area Geser & Sentuh -->
+                    <div id="canvasContainer" class="canvas-container w-full h-full">
+                        <div class="canvas-wrapper">
+                            <canvas id="outputCanvas" class="bg-white shadow-md rounded-sm"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- AI Floating Action Button -->
+    <button id="chatToggleBtn" class="fixed bottom-6 right-6 bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-full shadow-xl hover:shadow-2xl transition-all z-40 focus:outline-none focus:ring-4 focus:ring-purple-300 group">
+        <svg class="w-7 h-7 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+        </svg>
+    </button>
+
+    <!-- AI Chat Window -->
+    <div id="chatWidget" class="fixed bottom-24 right-4 sm:right-6 w-[calc(100vw-2rem)] sm:w-96 h-[500px] max-h-[70vh] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col z-50 chat-hidden overflow-hidden">
+        
+        <!-- Chat Header -->
+        <div class="bg-purple-600 text-white p-4 flex justify-between items-center rounded-t-2xl">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                <h3 class="font-bold">DeepSeek AI Assistant</h3>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="settingsToggleBtn" class="p-1 hover:bg-purple-500 rounded transition-colors" title="Pengaturan API">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                </button>
+                <button id="closeChatBtn" class="p-1 hover:bg-purple-500 rounded transition-colors" title="Tutup">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Settings Panel -->
+        <div id="settingsPanel" class="hidden absolute inset-0 top-[56px] bg-slate-50 z-20 p-4 flex flex-col">
+            <h4 class="font-bold text-slate-700 mb-2">Pengaturan API DeepSeek</h4>
+            <p class="text-xs text-slate-500 mb-4">Masukkan API Key DeepSeek Anda. Key disimpan secara lokal di browser Anda.</p>
+            <label class="text-sm font-semibold text-slate-700 mb-1">API Key</label>
+            <input type="password" id="apiKeyInput" placeholder="sk-..." class="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-purple-500 focus:outline-none mb-4 text-sm">
+            <div class="mt-auto flex gap-2">
+                <button id="cancelSettingsBtn" class="flex-1 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded font-medium transition-colors text-sm">Batal</button>
+                <button id="saveSettingsBtn" class="flex-1 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded font-medium transition-colors text-sm">Simpan</button>
+            </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div id="chatMessages" class="flex-grow p-4 overflow-y-auto bg-slate-50 flex flex-col gap-3 text-sm">
+            <div class="flex gap-2 w-full">
+                <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 text-purple-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                </div>
+                <div class="bg-white border border-slate-200 p-3 rounded-lg rounded-tl-none shadow-sm text-slate-700 markdown-body">
+                    Halo! Saya asisten AI. Ceritakan diagram apa yang ingin Anda buat, saya akan buatkan kode Mermaid.js-nya. (Pastikan API Key sudah diatur di menu ⚙️).
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Input -->
+        <div class="p-3 bg-white border-t border-slate-200 flex gap-2 items-end">
+            <textarea id="chatInput" rows="1" placeholder="Ketik pesan Anda..." class="flex-grow p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none text-sm resize-none max-h-24 overflow-y-auto"></textarea>
+            <button id="sendMessageBtn" class="bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-lg transition-colors flex-shrink-0 mb-[2px]">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Script Utama (Mermaid, Rendering, Pan & Zoom) -->
+    <script>
+        const codeInput = document.getElementById('mermaidCode');
+        const renderBtn = document.getElementById('renderBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const canvas = document.getElementById('outputCanvas');
+        const ctx = canvas.getContext('2d');
+        const errorBox = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        
+        // Elemen Interaksi
+        const canvasContainer = document.getElementById('canvasContainer');
+        const zoomInBtn = document.getElementById('zoomInBtn');
+        const zoomOutBtn = document.getElementById('zoomOutBtn');
+        const zoomResetBtn = document.getElementById('zoomResetBtn');
+        const zoomLevelDisplay = document.getElementById('zoomLevelDisplay');
+
+        // State Pan & Zoom
+        let currentZoom = 1;
+        let translateX = 0;
+        let translateY = 0;
+        let isDragging = false;
+        let startX, startY;
+        
+        // Touch State
+        let initialPinchDistance = null;
+        let initialZoom = 1;
+
+        // Fungsi Terapkan Transformasi CSS
+        function applyTransform(smooth = false) {
+            currentZoom = Math.max(0.1, Math.min(currentZoom, 5)); // Batas Zoom 10% s/d 500%
+            zoomLevelDisplay.innerText = Math.round(currentZoom * 100) + '%';
+            
+            if (smooth) {
+                canvas.style.transition = 'transform 0.2s ease-out';
+            } else {
+                canvas.style.transition = 'none';
+            }
+            
+            canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentZoom})`;
+        }
+
+        function resetView() {
+            currentZoom = 1;
+            translateX = 0;
+            translateY = 0;
+            applyTransform(true);
+        }
+
+        // Event Listener: Kontrol Tombol UI
+        zoomInBtn.addEventListener('click', () => { currentZoom += 0.2; applyTransform(true); });
+        zoomOutBtn.addEventListener('click', () => { currentZoom -= 0.2; applyTransform(true); });
+        zoomResetBtn.addEventListener('click', resetView);
+
+        // Event Listener: Mouse Panning (Geser)
+        canvasContainer.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX - translateX;
+            startY = e.clientY - translateY;
+            canvasContainer.style.cursor = 'grabbing';
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            translateX = e.clientX - startX;
+            translateY = e.clientY - startY;
+            applyTransform(false);
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+            canvasContainer.style.cursor = 'grab';
+        });
+
+        // Event Listener: Mouse Wheel (Zoom)
+        canvasContainer.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const zoomDelta = e.deltaY > 0 ? -0.1 : 0.1;
+            currentZoom += zoomDelta;
+            applyTransform(false);
+        }, { passive: false });
+
+        // Event Listener: Touch Gestures (Geser & Cubit untuk HP/Tablet)
+        canvasContainer.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                // Geser 1 Jari
+                isDragging = true;
+                startX = e.touches[0].clientX - translateX;
+                startY = e.touches[0].clientY - translateY;
+            } else if (e.touches.length === 2) {
+                // Pinch Zoom 2 Jari
+                isDragging = false;
+                initialPinchDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                initialZoom = currentZoom;
+            }
+        }, { passive: false });
+
+        canvasContainer.addEventListener('touchmove', (e) => {
+            e.preventDefault(); // Mencegah native pull-to-refresh & zoom
+            if (e.touches.length === 1 && isDragging) {
+                translateX = e.touches[0].clientX - startX;
+                translateY = e.touches[0].clientY - startY;
+                applyTransform(false);
+            } else if (e.touches.length === 2 && initialPinchDistance) {
+                const currentDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                currentZoom = initialZoom * (currentDistance / initialPinchDistance);
+                applyTransform(false);
+            }
+        }, { passive: false });
+
+        canvasContainer.addEventListener('touchend', (e) => {
+            if (e.touches.length < 2) {
+                initialPinchDistance = null;
+            }
+            if (e.touches.length === 0) {
+                isDragging = false;
+            } else if (e.touches.length === 1) {
+                // Lanjutkan geser bila tersisa 1 jari
+                startX = e.touches[0].clientX - translateX;
+                startY = e.touches[0].clientY - translateY;
+                isDragging = true;
+            }
+        });
+
+
+        // Fungsi Render Standar
+        function toggleLoading(isLoading) {
+            if (isLoading) {
+                loadingOverlay.classList.remove('hidden');
+                renderBtn.disabled = true;
+                downloadBtn.disabled = true;
+                renderBtn.dataset.originalText = renderBtn.innerText;
+                renderBtn.innerText = "Merender...";
+                canvas.classList.remove('fade-in');
+            } else {
+                loadingOverlay.classList.add('hidden');
+                renderBtn.disabled = false;
+                downloadBtn.disabled = false;
+                renderBtn.innerText = renderBtn.dataset.originalText || "Render ke Canvas";
+            }
+        }
+
+        async function renderToCanvas() {
+            const code = codeInput.value.trim();
+            if (!code) return;
+
+            toggleLoading(true);
+            errorBox.classList.add('hidden');
+
+            setTimeout(async () => {
+                try {
+                    const id = `mermaid-${Date.now()}`;
+                    const { svg } = await mermaid.render(id, code);
+
+                    const parser = new DOMParser();
+                    const svgDoc = parser.parseFromString(svg, "image/svg+xml");
+                    const svgElement = svgDoc.documentElement;
+
+                    if (!svgElement.getAttribute('xmlns')) {
+                        svgElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                    }
+
+                    let svgWidth = 800;
+                    let svgHeight = 600;
+
+                    const viewBox = svgElement.getAttribute('viewBox');
+                    if (viewBox) {
+                        const parts = viewBox.split(' ');
+                        if (parts.length === 4) {
+                            svgWidth = parseFloat(parts[2]) || 800;
+                            svgHeight = parseFloat(parts[3]) || 600;
+                        }
+                    } else {
+                        svgWidth = parseFloat(svgElement.getAttribute('width')) || 800;
+                        svgHeight = parseFloat(svgElement.getAttribute('height')) || 600;
+                    }
+
+                    svgElement.setAttribute('width', `${svgWidth}px`);
+                    svgElement.setAttribute('height', `${svgHeight}px`);
+
+                    const serializer = new XMLSerializer();
+                    const updatedSvgString = serializer.serializeToString(svgElement);
+                    const base64Svg = btoa(unescape(encodeURIComponent(updatedSvgString)));
+                    const url = `data:image/svg+xml;base64,${base64Svg}`;
+
+                    const isMobile = window.innerWidth < 768;
+                    const padding = isMobile ? 30 : 60; 
+
+                    drawImageToCanvas(url, svgWidth, svgHeight, padding);
+
+                } catch (error) {
+                    console.error("Mermaid Render Error:", error);
+                    let pesanError = error.message || "Terdapat kesalahan sintaks pada kode Mermaid.";
+                    if (pesanError.includes("No diagram type detected") || error.name === 'UnknownDiagramError') {
+                        errorText.textContent = "Error: Tipe diagram tidak didukung. Mermaid.js tidak mendukung sintaks ini secara langsung.";
+                    } else {
+                        errorText.textContent = pesanError.split('\n')[0]; 
+                    }
+                    errorBox.classList.remove('hidden');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    toggleLoading(false);
+                }
+            }, 100); 
+        }
+
+        function drawImageToCanvas(url, svgWidth, svgHeight, padding) {
+            const img = new Image();
+            
+            img.onload = () => {
+                canvas.width = svgWidth + (padding * 2);
+                canvas.height = svgHeight + (padding * 2);
+
+                // Set ulang posisi & zoom ke default (tengah & 100%)
+                resetView();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, padding, padding, svgWidth, svgHeight);
+                canvas.classList.add('fade-in');
+                toggleLoading(false);
+            };
+            
+            img.onerror = (err) => {
+                errorText.textContent = "Gagal memuat grafik ke dalam elemen Canvas.";
+                errorBox.classList.remove('hidden');
+                toggleLoading(false);
+            };
+            
+            img.src = url;
+        }
+
+        function downloadImage() {
+            const link = document.createElement('a');
+            link.download = `Diagram-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (typeof mermaid !== 'undefined') {
+                mermaid.initialize({ 
+                    startOnLoad: false, 
+                    theme: 'default',
+                    securityLevel: 'loose',
+                    flowchart: { htmlLabels: false },
+                    sequence: { htmlLabels: false },
+                    er: { htmlLabels: false },
+                    state: { htmlLabels: false },
+                    class: { htmlLabels: false }
+                });
+                renderBtn.addEventListener('click', renderToCanvas);
+                downloadBtn.addEventListener('click', downloadImage);
+                renderToCanvas();
+            }
+        });
+    </script>
+
+    <!-- DeepSeek AI Chat Logic -->
+    <script>
+        const chatToggleBtn = document.getElementById('chatToggleBtn');
+        const chatWidget = document.getElementById('chatWidget');
+        const closeChatBtn = document.getElementById('closeChatBtn');
+        const settingsToggleBtn = document.getElementById('settingsToggleBtn');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+        const cancelSettingsBtn = document.getElementById('cancelSettingsBtn');
+        const chatInput = document.getElementById('chatInput');
+        const sendMessageBtn = document.getElementById('sendMessageBtn');
+        const chatMessages = document.getElementById('chatMessages');
+
+        let conversationHistory = [
+            {"role": "system", "content": "Anda adalah asisten ahli Mermaid.js. Tugas Anda: membuat kode diagram Mermaid.js yang VALID berdasarkan permintaan. PENTING: JANGAN PERNAH gunakan sintaks PlantUML seperti 'useCaseDiagram', 'actor', atau 'rectangle'. Mermaid TIDAK mendukung tipe diagram tersebut. Jika pengguna meminta Use Case Diagram, simulasikan menggunakan 'flowchart TD' atau 'flowchart LR' (contoh: aktor ditulis `User((User))`, kasus penggunaan ditulis `Action([Action])`). Dukungan asli Mermaid meliputi: flowchart, sequenceDiagram, classDiagram, stateDiagram-v2, erDiagram. PASTIKAN kode dibungkus dalam blok markdown 'mermaid' (```mermaid ... ```)."}
+        ];
+
+        let deepseekApiKey = localStorage.getItem('deepseek_api_key') || '';
+        apiKeyInput.value = deepseekApiKey;
+
+        chatToggleBtn.addEventListener('click', () => {
+            chatWidget.classList.toggle('chat-hidden');
+            chatWidget.classList.toggle('chat-visible');
+            if(chatWidget.classList.contains('chat-visible')) chatInput.focus();
+        });
+
+        closeChatBtn.addEventListener('click', () => {
+            chatWidget.classList.remove('chat-visible');
+            chatWidget.classList.add('chat-hidden');
+        });
+
+        settingsToggleBtn.addEventListener('click', () => settingsPanel.classList.remove('hidden'));
+        cancelSettingsBtn.addEventListener('click', () => settingsPanel.classList.add('hidden'));
+        
+        saveSettingsBtn.addEventListener('click', () => {
+            deepseekApiKey = apiKeyInput.value.trim();
+            localStorage.setItem('deepseek_api_key', deepseekApiKey);
+            settingsPanel.classList.add('hidden');
+        });
+
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight < 96 ? this.scrollHeight : 96) + 'px';
+        });
+
+        chatInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        sendMessageBtn.addEventListener('click', sendMessage);
+
+        function addMessageToUI(content, role) {
+            const isUser = role === 'user';
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `flex gap-2 w-full ${isUser ? 'flex-row-reverse' : ''} fade-in`;
+            
+            let iconHtml = isUser 
+                ? `<div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center flex-shrink-0 text-slate-600"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg></div>`
+                : `<div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 text-purple-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg></div>`;
+            
+            let htmlContent = content;
+
+            if (!isUser) {
+                htmlContent = marked.parse(content);
+            }
+
+            msgDiv.innerHTML = `
+                ${iconHtml}
+                <div class="${isUser ? 'bg-purple-600 text-white rounded-tr-none' : 'bg-white border border-slate-200 text-slate-700 rounded-tl-none markdown-body'} p-3 rounded-lg shadow-sm text-sm" style="max-width: 85%; overflow-x: hidden;">
+                    ${htmlContent}
+                </div>
+            `;
+            chatMessages.appendChild(msgDiv);
+            
+            if (!isUser) {
+                if (window.renderMathInElement) {
+                    renderMathInElement(msgDiv, {
+                        delimiters: [
+                            {left: '$$', right: '$$', display: true},
+                            {left: '$', right: '$', display: false},
+                            {left: '\\(', right: '\\)', display: false},
+                            {left: '\\[', right: '\\]', display: true}
+                        ],
+                        throwOnError: false
+                    });
+                }
+
+                const codeBlocks = msgDiv.querySelectorAll('pre code.language-mermaid');
+                codeBlocks.forEach(block => {
+                    const rawCode = block.textContent;
+                    const btn = document.createElement('button');
+                    btn.className = 'apply-code-btn';
+                    btn.innerText = 'Gunakan Kode Ini di Editor';
+                    btn.onclick = () => {
+                        codeInput.value = rawCode;
+                        if(typeof renderToCanvas === 'function') renderToCanvas();
+                        btn.innerText = 'Telah Digunakan!';
+                        btn.style.backgroundColor = '#10b981';
+                        setTimeout(() => {
+                            btn.innerText = 'Gunakan Kode Ini di Editor';
+                            btn.style.backgroundColor = '';
+                        }, 2000);
+                    };
+                    block.parentElement.appendChild(btn);
+                });
+            }
+
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            if (!deepseekApiKey) {
+                alert("Silakan atur API Key DeepSeek terlebih dahulu di menu pengaturan chat (ikon gear).");
+                settingsPanel.classList.remove('hidden');
+                return;
+            }
+
+            addMessageToUI(text, 'user');
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
+            sendMessageBtn.disabled = true;
+
+            conversationHistory.push({"role": "user", "content": text});
+
+            const loadingId = 'loading-' + Date.now();
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = loadingId;
+            loadingDiv.className = `flex gap-2 w-full fade-in`;
+            loadingDiv.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 text-purple-600">
+                    <svg class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                </div>
+                <div class="bg-white border border-slate-200 p-3 rounded-lg rounded-tl-none shadow-sm text-slate-500 text-sm italic">
+                    AI sedang berpikir...
+                </div>
+            `;
+            chatMessages.appendChild(loadingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            try {
+                const response = await fetch('https://api.deepseek.com/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${deepseekApiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: "deepseek-chat",
+                        messages: conversationHistory,
+                        stream: false
+                    })
+                });
+
+                document.getElementById(loadingId).remove();
+
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.error?.message || "HTTP Error " + response.status);
+                }
+
+                const data = await response.json();
+                const aiMessage = data.choices[0].message.content;
+                
+                conversationHistory.push({"role": "assistant", "content": aiMessage});
+                addMessageToUI(aiMessage, 'assistant');
+
+            } catch (error) {
+                document.getElementById(loadingId)?.remove();
+                console.error(error);
+                addMessageToUI(`**Error:** Gagal menghubungi AI. ${error.message}. Pastikan API Key Anda valid.`, 'assistant');
+                conversationHistory.pop(); 
+            } finally {
+                sendMessageBtn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

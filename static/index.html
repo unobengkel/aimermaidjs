@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Editor - Mermaid AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        .canvas-container { overflow: hidden; position: relative; touch-action: none; cursor: grab; background-color: #f1f5f9; }
+        .canvas-container:active { cursor: grabbing; }
+        .canvas-wrapper { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+        canvas { display: block; max-width: none; transform-origin: center center; will-change: transform; }
+        .markdown-body pre { background-color: #1e293b; color: #e2e8f0; padding: 0.75rem; border-radius: 0.5rem; overflow-x: auto; margin: 0.5rem 0; font-size: 0.85em; }
+        .markdown-body code { font-family: monospace; background-color: #f1f5f9; color: #ef4444; padding: 0.1rem 0.3rem; border-radius: 0.25rem; font-size: 0.9em; }
+        .markdown-body pre code { background-color: transparent; color: inherit; padding: 0; }
+        .apply-code-btn { display: block; width: 100%; margin-top: 0.5rem; padding: 0.4rem; background-color: #3b82f6; color: white; text-align: center; border-radius: 0.375rem; font-size: 0.8rem; font-weight: bold; cursor: pointer; transition: background-color 0.2s; }
+        .apply-code-btn:hover { background-color: #2563eb; }
+        #chatWidget { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: bottom right; }
+        .chat-hidden { opacity: 0; transform: scale(0.9) translateY(20px); pointer-events: none; }
+        .chat-visible { opacity: 1; transform: scale(1) translateY(0); pointer-events: auto; }
+    </style>
+</head>
+<body class="bg-slate-50 flex h-screen overflow-hidden text-slate-800">
+
+    <!-- Mobile Menu Button -->
+    <button id="mobileMenuBtn" class="md:hidden fixed top-4 left-4 z-50 p-2 bg-blue-900 text-white rounded-lg shadow-lg">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+    </button>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/50 z-30 hidden md:hidden"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="bg-blue-900 text-white w-64 flex-shrink-0 fixed md:static h-full inset-y-0 left-0 z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 flex flex-col shadow-2xl">
+        <div class="p-6">
+            <h1 class="text-xl font-bold flex items-center gap-2">
+                <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                Mermaid AI
+            </h1>
+            <p class="text-xs text-blue-300 mt-1">Client-Server Edition</p>
+        </div>
+        <nav class="flex-grow flex flex-col gap-1 px-4">
+            <a href="/static/index.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 hover:bg-blue-800 transition-colors font-medium text-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                AI Editor
+            </a>
+            <a href="/static/diagrams.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 hover:bg-blue-800 transition-colors font-medium text-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                Daftar Diagram
+            </a>
+            <a href="/static/documents.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 hover:bg-blue-800 transition-colors font-medium text-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                Pustaka Dokumen RAG
+            </a>
+            <a href="/static/documentation.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 hover:bg-blue-800 transition-colors font-medium text-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                Dokumentasi
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 min-w-0 flex flex-col overflow-hidden relative">
+        <header class="bg-white border-b border-slate-200 p-4 sm:px-6 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between pl-14 sm:pl-16 md:pl-6 gap-3 z-10">
+            <div>
+                <h2 class="text-xl font-bold text-slate-800">Mermaid.js AI Editor</h2>
+                <p class="text-xs text-slate-500">Edit dan simpan diagram dengan bantuan AI Tracker</p>
+            </div>
+            <div class="flex gap-2 items-center">
+                <input type="text" id="diagramName" placeholder="Nama Diagram" class="px-3 py-2 border border-slate-300 rounded text-sm w-40 sm:w-auto outline-none focus:border-blue-500">
+                <button id="saveDiagramBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors shadow-sm flex-shrink-0">
+                    Simpan Diagram
+                </button>
+            </div>
+        </header>
+
+        <div id="errorMessage" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-3 mx-4 mt-4 rounded shadow-sm text-sm z-10" role="alert">
+            <p class="font-bold">Terjadi Kesalahan Sintaks</p>
+            <p id="errorText" class="mt-1 text-xs">Silakan periksa kembali kode Anda.</p>
+        </div>
+
+        <!-- Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-grow min-h-0 p-4 overflow-y-auto pb-32">
+            
+            <!-- Editor -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col h-[400px] lg:h-full z-10">
+                <div class="flex justify-between items-center mb-3">
+                    <label class="font-semibold text-slate-700 text-sm">Editor Kode</label>
+                    <button id="renderBtn" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded text-xs transition-colors shadow-sm">
+                        Render
+                    </button>
+                </div>
+                <textarea id="mermaidCode" class="w-full flex-grow p-3 bg-slate-900 text-green-400 border-0 rounded font-mono text-sm focus:outline-none resize-none shadow-inner" spellcheck="false">graph TD
+    A[Pengguna] -->|Meminta Diagram| B(AI Chatbot)
+    B -->|Generate| C{Mermaid Code}
+    C -->|Terapkan| D[Editor]
+</textarea>
+            </div>
+
+            <!-- Canvas -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col min-h-[500px] lg:h-full relative z-10">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="font-semibold text-slate-700 text-sm">Hasil Canvas</h2>
+                    <button id="downloadBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded text-xs transition-colors shadow-sm disabled:opacity-50">
+                        Unduh PNG
+                    </button>
+                </div>
+                
+                <div class="relative flex-grow bg-slate-100 border border-slate-300 rounded overflow-hidden flex flex-col">
+                    <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20 bg-white/90 backdrop-blur shadow rounded-full border border-slate-200 flex items-center px-2 py-1 gap-1">
+                        <button id="zoomOutBtn" class="p-1 px-2 text-slate-600 hover:text-blue-600 rounded-full text-lg">-</button>
+                        <span id="zoomLevelDisplay" class="text-xs font-bold text-slate-700 min-w-[3rem] text-center">100%</span>
+                        <button id="zoomInBtn" class="p-1 px-2 text-slate-600 hover:text-blue-600 rounded-full text-lg">+</button>
+                        <div class="w-px h-4 bg-slate-300 mx-1"></div>
+                        <button id="zoomResetBtn" class="p-1 text-xs font-semibold text-slate-600 hover:text-blue-600 px-2">Reset</button>
+                    </div>
+
+                    <div id="loadingOverlay" class="absolute inset-0 bg-slate-100/90 flex flex-col items-center justify-center z-30 hidden backdrop-blur-sm">
+                        <span class="text-blue-800 font-semibold animate-pulse text-sm">Memproses...</span>
+                    </div>
+
+                    <div id="canvasContainer" class="canvas-container w-full h-full">
+                        <div class="canvas-wrapper">
+                            <canvas id="outputCanvas" class="bg-white shadow-sm"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- AI FAB & Chat -->
+    <button id="chatToggleBtn" class="fixed bottom-6 right-6 bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-full shadow-xl hover:shadow-2xl transition-all z-40">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+    </button>
+
+    <div id="chatWidget" class="fixed bottom-24 right-4 sm:right-6 w-[calc(100vw-2rem)] sm:w-96 h-[500px] max-h-[70vh] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col z-50 chat-hidden overflow-hidden">
+        <div class="bg-purple-600 text-white p-3 flex justify-between items-center rounded-t-2xl">
+            <h3 class="font-bold text-sm">DeepSeek AI Assistant</h3>
+            <div class="flex items-center gap-1">
+                <button id="ragConfigBtn" class="p-1.5 hover:bg-purple-500 rounded" title="Pilih File RAG">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                </button>
+                <button id="settingsToggleBtn" class="p-1.5 hover:bg-purple-500 rounded" title="Pengaturan API">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                </button>
+                <button id="closeChatBtn" class="p-1.5 hover:bg-purple-500 rounded" title="Tutup">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Settings Panel -->
+        <div id="settingsPanel" class="hidden absolute inset-0 top-[48px] bg-slate-50 z-20 p-4 flex flex-col">
+            <h4 class="font-bold text-slate-700 mb-2">API DeepSeek</h4>
+            <input type="password" id="apiKeyInput" placeholder="sk-..." class="w-full p-2 border border-slate-300 rounded mb-4 text-sm outline-none">
+            <div class="mt-auto flex gap-2">
+                <button id="cancelSettingsBtn" class="flex-1 py-2 bg-slate-200 text-slate-700 rounded text-sm">Batal</button>
+                <button id="saveSettingsBtn" class="flex-1 py-2 bg-purple-600 text-white rounded text-sm">Simpan</button>
+            </div>
+        </div>
+
+        <div id="chatMessages" class="flex-grow p-4 overflow-y-auto bg-slate-50 flex flex-col gap-3 text-sm">
+            <div class="flex gap-2 w-full">
+                <div class="bg-white border p-3 rounded-lg rounded-tl-none shadow-sm text-slate-700 markdown-body">Halo! Anda dapat memilih dokumen referensi RAG melalui ikon dokumen di atas, atau langsung tanyakan pembuatan diagram.</div>
+            </div>
+        </div>
+
+        <div class="p-2 border-t flex gap-1 items-end bg-white">
+            <textarea id="chatInput" rows="1" placeholder="Ketik..." class="flex-grow p-2 border rounded-lg text-sm resize-none max-h-24 outline-none focus:border-purple-500"></textarea>
+            <button id="sendMessageBtn" class="bg-purple-600 text-white p-2 rounded-lg mb-[2px]">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- RAG Selection Modal -->
+    <div id="ragModal" class="hidden fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md flex flex-col fade-in">
+            <div class="p-4 border-b font-bold flex justify-between">
+                <span>Pilih Dokumen RAG (Konteks)</span>
+            </div>
+            <div class="p-4 max-h-64 overflow-y-auto" id="ragDocumentList">
+                <div class="text-sm text-slate-500 text-center py-4">Memuat data dokumen...</div>
+            </div>
+            <div class="p-4 border-t flex justify-end gap-2">
+                <button onclick="hideModal('ragModal')" class="px-4 py-2 text-sm bg-blue-600 text-white rounded font-medium">Selesai</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="/static/app.js"></script>
+    <script>
+        // INIT Diagram State
+        let currentDiagramId = null;
+        const codeInput = document.getElementById('mermaidCode');
+        const diagramNameInput = document.getElementById('diagramName');
+        const saveDiagramBtn = document.getElementById('saveDiagramBtn');
+        const renderBtn = document.getElementById('renderBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const canvas = document.getElementById('outputCanvas');
+        const ctx = canvas.getContext('2d');
+        const errorBox = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+
+        // Check URL params for edit mode
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('id');
+        if (editId) {
+            fetch(`/api/diagrams/${editId}`)
+                .then(res => res.json())
+                .then(data => {
+                    currentDiagramId = data.id;
+                    diagramNameInput.value = data.name;
+                    codeInput.value = data.mermaid_code;
+                    renderToCanvas();
+                })
+                .catch(() => showAlert('Gagal memuat diagram untuk diedit', 'error'));
+        }
+
+        // SAVE Diagram Functionality
+        saveDiagramBtn.addEventListener('click', async () => {
+            const name = diagramNameInput.value.trim();
+            const code = codeInput.value.trim();
+            if(!name || !code) {
+                showAlert('Nama dan Kode tidak boleh kosong', 'error'); return;
+            }
+            saveDiagramBtn.disabled = true;
+            saveDiagramBtn.innerText = "Menyimpan...";
+
+            try {
+                const method = currentDiagramId ? 'PUT' : 'POST';
+                const url = currentDiagramId ? `/api/diagrams/${currentDiagramId}` : '/api/diagrams';
+                const res = await fetch(url, {
+                    method: method,
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ name, mermaid_code: code })
+                });
+
+                if(res.ok) {
+                    const data = await res.json();
+                    currentDiagramId = data.id;
+                    showAlert('Diagram berhasil disimpan!');
+                    // Update URL silently
+                    window.history.replaceState({}, '', `/static/index.html?id=${data.id}`);
+                } else {
+                    showAlert('Gagal menyimpan diagram', 'error');
+                }
+            } catch (err) {
+                showAlert('Terjadi kesalahan koneksi', 'error');
+            } finally {
+                saveDiagramBtn.disabled = false;
+                saveDiagramBtn.innerText = "Simpan Diagram";
+            }
+        });
+
+
+        // CANVAS & PAN ZOOM
+        const canvasContainer = document.getElementById('canvasContainer');
+        const zoomInBtn = document.getElementById('zoomInBtn');
+        const zoomOutBtn = document.getElementById('zoomOutBtn');
+        const zoomResetBtn = document.getElementById('zoomResetBtn');
+        const zoomLevelDisplay = document.getElementById('zoomLevelDisplay');
+
+        let currentZoom = 1; let translateX = 0; let translateY = 0; let isDragging = false; let startX, startY;
+        function applyTransform() {
+            currentZoom = Math.max(0.1, Math.min(currentZoom, 5));
+            zoomLevelDisplay.innerText = Math.round(currentZoom * 100) + '%';
+            canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentZoom})`;
+        }
+        function resetView() { currentZoom = 1; translateX = 0; translateY = 0; applyTransform(); }
+        
+        zoomInBtn.onclick = () => { currentZoom += 0.2; applyTransform(); };
+        zoomOutBtn.onclick = () => { currentZoom -= 0.2; applyTransform(); };
+        zoomResetBtn.onclick = resetView;
+
+        let initialPinchDist = null; let initialZoom = 1;
+
+        canvasContainer.addEventListener('mousedown', (e) => { isDragging = true; startX = e.clientX - translateX; startY = e.clientY - translateY; canvasContainer.style.cursor = 'grabbing'; });
+        window.addEventListener('mousemove', (e) => { if(!isDragging) return; translateX = e.clientX - startX; translateY = e.clientY - startY; applyTransform(); });
+        window.addEventListener('mouseup', () => { isDragging = false; canvasContainer.style.cursor = 'grab'; });
+        canvasContainer.addEventListener('wheel', (e) => { e.preventDefault(); currentZoom += (e.deltaY > 0 ? -0.1 : 0.1); applyTransform(); });
+
+        canvasContainer.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) { isDragging = true; startX = e.touches[0].clientX - translateX; startY = e.touches[0].clientY - translateY; }
+            else if (e.touches.length === 2) { isDragging = false; initialPinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); initialZoom = currentZoom; }
+        }, {passive: false});
+
+        canvasContainer.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (e.touches.length === 1 && isDragging) { translateX = e.touches[0].clientX - startX; translateY = e.touches[0].clientY - startY; applyTransform(); }
+            else if (e.touches.length === 2 && initialPinchDist) { const currentDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); currentZoom = initialZoom * (currentDist / initialPinchDist); applyTransform(); }
+        }, {passive: false});
+
+        canvasContainer.addEventListener('touchend', (e) => {
+            if (e.touches.length < 2) initialPinchDist = null;
+            if (e.touches.length === 0) isDragging = false;
+            else if (e.touches.length === 1) { startX = e.touches[0].clientX - translateX; startY = e.touches[0].clientY - translateY; isDragging = true; }
+        });
+
+        // MERMAID Render Logic
+        mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
+
+        function toggleLoading(isLoading) {
+            if(isLoading) { loadingOverlay.classList.remove('hidden'); renderBtn.disabled=true; downloadBtn.disabled=true; errorBox.classList.add('hidden'); }
+            else { loadingOverlay.classList.add('hidden'); renderBtn.disabled=false; downloadBtn.disabled=false; }
+        }
+
+        async function renderToCanvas() {
+            const code = codeInput.value.trim();
+            if(!code) return;
+            toggleLoading(true);
+            setTimeout(async () => {
+                try {
+                    const id = `mermaid-${Date.now()}`;
+                    const { svg } = await mermaid.render(id, code);
+                    const parser = new DOMParser();
+                    const svgDoc = parser.parseFromString(svg, "image/svg+xml");
+                    const svgElement = svgDoc.documentElement;
+                    if (!svgElement.getAttribute('xmlns')) svgElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                    
+                    let svgWidth = parseFloat(svgElement.getAttribute('width')) || 800;
+                    let svgHeight = parseFloat(svgElement.getAttribute('height')) || 600;
+                    const viewBox = svgElement.getAttribute('viewBox');
+                    if (viewBox) {
+                        const parts = viewBox.split(' ');
+                        if (parts.length === 4) {
+                            svgWidth = parseFloat(parts[2]);
+                            svgHeight = parseFloat(parts[3]);
+                        }
+                    }
+                    svgElement.setAttribute('width', `${svgWidth}px`);
+                    svgElement.setAttribute('height', `${svgHeight}px`);
+                    
+                    const base64Svg = btoa(unescape(encodeURIComponent(new XMLSerializer().serializeToString(svgElement))));
+                    drawImageToCanvas(`data:image/svg+xml;base64,${base64Svg}`, svgWidth, svgHeight, window.innerWidth < 768 ? 30 : 60);
+                } catch (e) {
+                    errorText.textContent = e.message.split('\n')[0];
+                    errorBox.classList.remove('hidden');
+                    ctx.clearRect(0,0,canvas.width,canvas.height);
+                    toggleLoading(false);
+                }
+            }, 100);
+        }
+
+        function drawImageToCanvas(url, w, h, pad) {
+            const img = new Image();
+            img.onload = () => {
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = (w + pad*2) * dpr; 
+                canvas.height = (h + pad*2) * dpr;
+                canvas.style.width = `${w + pad*2}px`;
+                canvas.style.height = `${h + pad*2}px`;
+                resetView();
+                ctx.scale(dpr, dpr);
+                ctx.fillStyle = '#fff'; 
+                ctx.fillRect(0, 0, w + pad*2, h + pad*2);
+                ctx.drawImage(img, pad, pad, w, h);
+                toggleLoading(false);
+            };
+            img.src = url;
+        }
+
+        renderBtn.onclick = renderToCanvas;
+        downloadBtn.onclick = () => {
+            const a = document.createElement('a'); a.download = `Diagram.png`;
+            a.href = canvas.toDataURL('image/png'); a.click();
+        };
+
+        // RAG Selection Logic
+        const ragConfigBtn = document.getElementById('ragConfigBtn');
+        const ragDocumentList = document.getElementById('ragDocumentList');
+        let selectedDocumentIds = [];
+
+        ragConfigBtn.onclick = async () => {
+            showModal('ragModal');
+            ragDocumentList.innerHTML = '<div class="text-xs text-center text-slate-500 py-4">Memuat data...</div>';
+            try {
+                const res = await fetch('/api/documents');
+                if(!res.ok) throw new Error();
+                const docs = await res.json();
+                ragDocumentList.innerHTML = '';
+                if(docs.length === 0) {
+                    ragDocumentList.innerHTML = '<div class="text-xs text-center text-slate-500 py-4">Belum ada dokumen yang diunggah.</div>';
+                    return;
+                }
+                docs.forEach(doc => {
+                    const isChecked = selectedDocumentIds.includes(doc.id) ? 'checked' : '';
+                    const label = document.createElement('label');
+                    label.className = "flex items-center gap-3 p-3 border-b hover:bg-slate-50 cursor-pointer text-sm";
+                    label.innerHTML = `
+                        <input type="checkbox" value="${doc.id}" class="w-4 h-4 text-blue-600 rounded bg-slate-100 border-slate-300 rag-checkbox" ${isChecked}>
+                        <span class="flex-grow font-medium text-slate-700">${doc.filename}</span>
+                        <span class="text-xs text-slate-400 font-mono">${doc.file_type}</span>
+                    `;
+                    ragDocumentList.appendChild(label);
+                });
+
+                document.querySelectorAll('.rag-checkbox').forEach(box => {
+                    box.onchange = (e) => {
+                        const val = parseInt(e.target.value);
+                        if(e.target.checked) selectedDocumentIds.push(val);
+                        else selectedDocumentIds = selectedDocumentIds.filter(id => id !== val);
+                    };
+                });
+
+            } catch (err) {
+                ragDocumentList.innerHTML = '<div class="text-xs text-center text-red-500 py-4">Gagal memuat dokumen.</div>';
+            }
+        };
+
+
+        // CHAT Logic
+        const chatToggleBtn = document.getElementById('chatToggleBtn');
+        const chatWidget = document.getElementById('chatWidget');
+        const closeChatBtn = document.getElementById('closeChatBtn');
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendMessageBtn');
+        const chatMsgs = document.getElementById('chatMessages');
+        
+        let deepseekApiKey = localStorage.getItem('deepseek_api_key') || '';
+        document.getElementById('apiKeyInput').value = deepseekApiKey;
+        document.getElementById('settingsToggleBtn').onclick = () => document.getElementById('settingsPanel').classList.remove('hidden');
+        document.getElementById('cancelSettingsBtn').onclick = () => document.getElementById('settingsPanel').classList.add('hidden');
+        document.getElementById('saveSettingsBtn').onclick = () => {
+            deepseekApiKey = document.getElementById('apiKeyInput').value.trim();
+            localStorage.setItem('deepseek_api_key', deepseekApiKey);
+            document.getElementById('settingsPanel').classList.add('hidden');
+        };
+
+        chatToggleBtn.onclick = () => { chatWidget.classList.toggle('chat-hidden'); chatWidget.classList.toggle('chat-visible'); };
+        closeChatBtn.onclick = () => { chatWidget.classList.remove('chat-visible'); chatWidget.classList.add('chat-hidden'); };
+
+        let history = [
+            {"role": "system", "content": "Anda asisten Mermaid.js. Buat diagram Mermaid.js VALID tanpa PlantUML / unsupported types. Beri kode dalam blok markdown ```mermaid"}
+        ];
+
+        function addMsg(content, role) {
+            const isUser = role==='user';
+            const div = document.createElement('div');
+            div.className = `flex gap-2 w-full ${isUser?'flex-row-reverse':''} fade-in`;
+            div.innerHTML = `<div class="bg-${isUser?'purple-600 text-white rounded-tr-none':'white border text-slate-700 rounded-tl-none markdown-body'} p-3 rounded-lg shadow-sm" style="max-width:85%;overflow:hidden;">${isUser?content:marked.parse(content)}</div>`;
+            chatMsgs.appendChild(div);
+
+            if(!isUser) {
+                if(window.renderMathInElement) renderMathInElement(div, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});
+                div.querySelectorAll('pre code.language-mermaid').forEach(blk => {
+                    const btn = document.createElement('button'); btn.className='apply-code-btn'; btn.innerText='Gunakan ke Editor';
+                    btn.onclick = () => { codeInput.value=blk.textContent; renderToCanvas(); btn.innerText='Sukses!'; setTimeout(()=>btn.innerText='Gunakan ke Editor',2000); };
+                    blk.parentElement.appendChild(btn);
+                });
+            }
+            chatMsgs.scrollTop = chatMsgs.scrollHeight;
+        }
+
+        async function sendChat() {
+            const text = chatInput.value.trim();
+            if(!text) return;
+            if(!deepseekApiKey) { showAlert('Atur API Key DeepSeek pada opsi setelan chat', 'error'); return; }
+
+            addMsg(text, 'user');
+            chatInput.value='';
+            sendBtn.disabled=true;
+            history.push({"role": "user", "content": text});
+
+            const loading = document.createElement('div'); loading.innerHTML='<div class="italic text-xs text-slate-500 fade-in py-2">Memproses via Backend API...</div>';
+            chatMsgs.appendChild(loading); chatMsgs.scrollTop = chatMsgs.scrollHeight;
+
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        messages: history,
+                        api_key: deepseekApiKey,
+                        document_ids: selectedDocumentIds.length > 0 ? selectedDocumentIds : null
+                    })
+                });
+
+                loading.remove();
+                if(!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || "Kesalahan server");
+                }
+                const data = await res.json();
+                history.push({"role": "assistant", "content": data.response});
+                addMsg(data.response, 'assistant');
+            } catch(e) {
+                loading.remove();
+                addMsg(`**Error:** ${e.message}`, 'assistant');
+                history.pop();
+            } finally { sendBtn.disabled=false; }
+        }
+
+        sendBtn.onclick = sendChat;
+        chatInput.onkeypress = (e) => { if(e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } };
+
+        window.onload = renderToCanvas;
+    </script>
+</body>
+</html>

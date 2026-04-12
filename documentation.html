@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth scroll-pt-20 lg:scroll-pt-8">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panduan Penggunaan - Mermaid AI Workspace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom scrollbar untuk sidebar agar lebih rapi */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-blue-200">
+
+    <!-- Mobile Header (Visible only on mobile/tablet) -->
+    <div class="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-slate-200 z-40 flex items-center px-4 shadow-sm">
+        <button id="mobile-menu-btn" class="p-2 rounded-md hover:bg-slate-100 text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+        </button>
+        <span class="ml-4 font-bold text-slate-800 text-lg">Mermaid AI Docs</span>
+    </div>
+
+    <!-- Sidebar Backdrop (Mobile only) -->
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/50 z-40 hidden lg:hidden backdrop-blur-sm transition-opacity"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed top-0 left-0 h-screen w-72 bg-white border-r border-slate-200 z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col shadow-xl lg:shadow-none">
+        
+        <!-- Sidebar Header -->
+        <div class="h-16 flex items-center justify-between px-6 border-b border-slate-100 shrink-0">
+            <h2 class="text-xl font-bold text-blue-700 tracking-tight flex items-center gap-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                Mermaid AI
+            </h2>
+            <button id="close-sidebar-btn" class="lg:hidden p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+
+        <!-- Sidebar Navigation -->
+        <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+            <p class="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 mt-4">Panduan Utama</p>
+            <a href="#install" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg text-slate-600 hover:bg-blue-50 hover:text-blue-700 transition-colors">
+                <span class="w-6 h-6 rounded flex items-center justify-center bg-blue-100 text-blue-600 text-xs font-bold">1</span>
+                Download & Instalasi
+            </a>
+            <a href="#setup" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
+                <span class="w-6 h-6 rounded flex items-center justify-center bg-indigo-100 text-indigo-600 text-xs font-bold">2</span>
+                Cara Setup Project
+            </a>
+            <a href="#running" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors">
+                <span class="w-6 h-6 rounded flex items-center justify-center bg-slate-200 text-slate-700 text-xs font-bold">3</span>
+                Menjalankan Aplikasi
+            </a>
+            
+            <p class="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 mt-6">Konfigurasi</p>
+            <a href="#apikey" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg text-slate-600 hover:bg-purple-50 hover:text-purple-700 transition-colors">
+                <span class="w-6 h-6 rounded flex items-center justify-center bg-purple-100 text-purple-600 text-xs font-bold">4</span>
+                Setting Key AI DeepSeek
+            </a>
+            
+            <p class="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 mt-6">Fitur Aplikasi</p>
+            <a href="#editor" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg text-slate-600 hover:bg-sky-50 hover:text-sky-700 transition-colors">
+                <span class="w-6 h-6 rounded flex items-center justify-center bg-sky-100 text-sky-600 text-xs font-bold">5</span>
+                Halaman AI Editor
+            </a>
+            <a href="#list" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg text-slate-600 hover:bg-amber-50 hover:text-amber-700 transition-colors">
+                <span class="w-6 h-6 rounded flex items-center justify-center bg-amber-100 text-amber-600 text-xs font-bold">6</span>
+                Halaman Daftar Diagram
+            </a>
+            <a href="#rag" class="nav-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
+                <span class="w-6 h-6 rounded flex items-center justify-center bg-emerald-100 text-emerald-600 text-xs font-bold">7</span>
+                Pustaka Dukungan RAG
+            </a>
+        </nav>
+        
+        <!-- Sidebar Footer -->
+        <div class="p-4 border-t border-slate-100 shrink-0">
+            <p class="text-xs text-slate-400 text-center">Versi 1.0.0</p>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="lg:ml-72 pt-20 lg:pt-8 pb-12 px-4 sm:px-6 lg:px-12 transition-all duration-300">
+        <div class="max-w-4xl mx-auto">
+            
+            <header class="text-center mb-12 lg:mb-16">
+                <h1 class="text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight mb-3">Manual Mermaid AI</h1>
+                <p class="text-slate-500 text-lg">Panduan Lengkap Instalasi & Operasional System</p>
+            </header>
+
+            <!-- 1. Download & Instalasi -->
+            <section id="install" class="bg-white p-6 lg:p-8 rounded-2xl shadow-sm border border-slate-200 mb-8 scroll-mt-24 lg:scroll-mt-12">
+                <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-3 border-b border-slate-100 pb-4">
+                    <span class="bg-blue-600 text-white w-10 h-10 rounded-xl flex items-center justify-center text-lg shadow-sm">1</span>
+                    Download & Instalasi
+                </h2>
+                <p class="mb-5 text-slate-600">Ikuti langkah berikut untuk memasang aplikasi di lingkungan lokal Anda:</p>
+                
+                <ol class="list-decimal list-inside space-y-3 text-slate-700 mb-6 ml-2">
+                    <li>Ekstrak folder project <strong class="font-semibold text-slate-900">Mermaid AI</strong> ke direktori pilihan Anda.</li>
+                    <li>Pastikan komputer Anda telah terinstal <strong class="font-semibold text-slate-900 text-blue-600">Python 3.13</strong> atau versi lebih baru.</li>
+                    <li>Buka Command Prompt (CMD) atau Terminal di dalam direktori project tersebut.</li>
+                    <li>Jalankan perintah berikut untuk menginstal semua dependensi yang diperlukan:</li>
+                </ol>
+                
+                <pre class="bg-slate-900 text-slate-50 p-4 rounded-xl overflow-x-auto font-mono text-sm shadow-inner mb-6"><code>pip install -r requirements.txt</code></pre>
+                
+                <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl flex gap-3">
+                    <svg class="w-6 h-6 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    <div class="text-sm text-amber-800">
+                        <strong class="font-bold">Penting:</strong> Kecepatan instalasi bergantung pada koneksi internet Anda karena sistem akan mengunduh library AI (FastAPI, ChromaDB, HuggingFace).
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Cara Setup -->
+            <section id="setup" class="bg-white p-6 lg:p-8 rounded-2xl shadow-sm border border-slate-200 mb-8 scroll-mt-24 lg:scroll-mt-12">
+                <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-3 border-b border-slate-100 pb-4">
+                    <span class="bg-indigo-600 text-white w-10 h-10 rounded-xl flex items-center justify-center text-lg shadow-sm">2</span>
+                    Cara Setup Project
+                </h2>
+                <p class="mb-6 text-slate-600">Pastikan struktur file Anda sudah lengkap sebelum menjalankan server:</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="p-5 bg-slate-50 rounded-xl border border-slate-200 hover:shadow-md transition-shadow">
+                        <span class="inline-block bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold mb-4 tracking-wide uppercase">Backend</span>
+                        <ul class="text-sm space-y-3 text-slate-600">
+                            <li class="flex items-start gap-2"><code class="bg-white border border-slate-200 text-pink-600 px-1.5 py-0.5 rounded text-xs font-mono">main.py</code> <span>Server FastAPI</span></li>
+                            <li class="flex items-start gap-2"><code class="bg-white border border-slate-200 text-pink-600 px-1.5 py-0.5 rounded text-xs font-mono">database.py</code> <span>Model Data SQLite</span></li>
+                            <li class="flex items-start gap-2"><code class="bg-white border border-slate-200 text-pink-600 px-1.5 py-0.5 rounded text-xs font-mono">rag_handler.py</code> <span>Mesin Vector AI</span></li>
+                        </ul>
+                    </div>
+                    <div class="p-5 bg-slate-50 rounded-xl border border-slate-200 hover:shadow-md transition-shadow">
+                        <span class="inline-block bg-teal-100 text-teal-700 px-3 py-1 rounded-full text-xs font-bold mb-4 tracking-wide uppercase">Frontend</span>
+                        <ul class="text-sm space-y-3 text-slate-600">
+                            <li class="flex items-start gap-2"><code class="bg-white border border-slate-200 text-pink-600 px-1.5 py-0.5 rounded text-xs font-mono">static/</code> <span>Folder aset UI (HTML, CSS, JS)</span></li>
+                            <li class="flex items-start gap-2"><code class="bg-white border border-slate-200 text-pink-600 px-1.5 py-0.5 rounded text-xs font-mono">requirements.txt</code> <span>Daftar library Python</span></li>
+                        </ul>
+                    </div>
+                </div>
+                <p class="mt-6 text-sm text-slate-500 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Database <strong class="text-slate-700">mermaid_app.db</strong> dan folder <strong class="text-slate-700">chroma_db</strong> akan dibuat otomatis oleh sistem saat pertama kali dijalankan.
+                </p>
+            </section>
+
+            <!-- 3. Menjalankan Aplikasi -->
+            <section id="running" class="bg-white p-6 lg:p-8 rounded-2xl shadow-sm border border-slate-200 mb-8 scroll-mt-24 lg:scroll-mt-12">
+                <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-3 border-b border-slate-100 pb-4">
+                    <span class="bg-slate-800 text-white w-10 h-10 rounded-xl flex items-center justify-center text-lg shadow-sm">3</span>
+                    Menjalankan Aplikasi
+                </h2>
+                
+                <div class="space-y-8">
+                    <div>
+                        <h3 class="font-bold text-slate-800 mb-2 flex items-center gap-2">
+                            <span class="bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs">A</span> 
+                            Melalui Command Prompt (CMD)
+                        </h3>
+                        <p class="text-sm text-slate-600 mb-3 ml-8">Gunakan perintah di bawah ini agar aplikasi bisa diakses oleh komputer lain/Tablet dalam satu jaringan:</p>
+                        <pre class="bg-slate-900 text-slate-50 p-4 rounded-xl overflow-x-auto font-mono text-sm shadow-inner ml-8"><code>uvicorn main:app --host 0.0.0.0 --port 8000 --reload</code></pre>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 mb-2 flex items-center gap-2">
+                            <span class="bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs">B</span> 
+                            Melalui Project Manager (PM2 / Background)
+                        </h3>
+                        <p class="text-sm text-slate-600 mb-3 ml-8">Jika ingin menjalankan terus-menerus di latar belakang tanpa harus membuka terminal terus:</p>
+                        <pre class="bg-slate-900 text-slate-50 p-4 rounded-xl overflow-x-auto font-mono text-sm shadow-inner ml-8"><code>pm2 start "uvicorn main:app --port 8000" --name "mermaid-ai"</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. Setting API Key -->
+            <section id="apikey" class="bg-white p-6 lg:p-8 rounded-2xl shadow-sm border border-slate-200 mb-8 scroll-mt-24 lg:scroll-mt-12">
+                <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-3 border-b border-slate-100 pb-4">
+                    <span class="bg-purple-600 text-white w-10 h-10 rounded-xl flex items-center justify-center text-lg shadow-sm">4</span>
+                    Setting Key AI DeepSeek
+                </h2>
+                <p class="mb-5 text-slate-600">Untuk mengaktifkan fitur cerdas AI, Anda memerlukan API Key:</p>
+                
+                <ol class="list-decimal list-inside space-y-3 text-slate-700 mb-6 ml-2">
+                    <li>Buka aplikasi lewat browser (<code class="bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded font-mono text-xs border border-slate-200">localhost:8000</code>).</li>
+                    <li>Klik tombol <strong class="font-semibold text-slate-900">Chat (Ikon Pesan Ungu)</strong> di pojok kanan bawah.</li>
+                    <li>Pilih ikon <strong class="font-semibold text-slate-900">Roda Gigi (Settings)</strong> di bagian atas widget chat.</li>
+                    <li>Tempelkan API Key DeepSeek Anda dan klik <strong class="font-semibold text-slate-900">Simpan</strong>.</li>
+                </ol>
+                
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-xl flex gap-3">
+                    <svg class="w-6 h-6 text-blue-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <div class="text-sm text-blue-800">
+                        Sistem menyimpan Key ini di peramban Anda (Local Storage), bukan di server, sehingga privasi Anda lebih terjaga secara penuh.
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. Halaman AI Editor -->
+            <section id="editor" class="bg-white p-6 lg:p-8 rounded-2xl shadow-sm border border-slate-200 mb-8 scroll-mt-24 lg:scroll-mt-12">
+                <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-3 border-b border-slate-100 pb-4">
+                    <span class="bg-sky-500 text-white w-10 h-10 rounded-xl flex items-center justify-center text-lg shadow-sm">5</span>
+                    Halaman AI Mermaid Editor
+                </h2>
+                
+                <ul class="space-y-4 text-slate-700">
+                    <li class="flex gap-3">
+                        <svg class="w-6 h-6 text-sky-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                        <div><strong class="font-bold text-slate-900 block">Chatting</strong> Perintahkan AI untuk membuat diagram (contoh: "Buat alur login sekolah").</div>
+                    </li>
+                    <li class="flex gap-3">
+                        <svg class="w-6 h-6 text-sky-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                        <div><strong class="font-bold text-slate-900 block">Gunakan Kode</strong> Klik tombol "Gunakan ke Editor" pada balasan AI untuk langsung memvisualisasikannya.</div>
+                    </li>
+                    <li class="flex gap-3">
+                        <svg class="w-6 h-6 text-sky-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
+                        <div><strong class="font-bold text-slate-900 block">Interaksi Canvas</strong> Geser diagram dengan mouse/jari, dan gunakan cubitan (pinch) untuk zoom di tablet/HP.</div>
+                    </li>
+                    <li class="flex gap-3">
+                        <svg class="w-6 h-6 text-sky-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                        <div><strong class="font-bold text-slate-900 block">Simpan</strong> Beri nama diagram dan klik tombol simpan untuk menyimpannya ke database.</div>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 6. Daftar Diagram -->
+            <section id="list" class="bg-white p-6 lg:p-8 rounded-2xl shadow-sm border border-slate-200 mb-8 scroll-mt-24 lg:scroll-mt-12">
+                <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-3 border-b border-slate-100 pb-4">
+                    <span class="bg-amber-500 text-white w-10 h-10 rounded-xl flex items-center justify-center text-lg shadow-sm">6</span>
+                    Halaman Daftar Diagram
+                </h2>
+                <p class="text-slate-600 mb-6">Di halaman ini, Anda dapat mengelola riwayat diagram Anda yang telah tersimpan:</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="p-4 bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col items-center text-center">
+                        <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-3">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                        <strong class="text-slate-900 block mb-1">Cari</strong>
+                        <span class="text-sm text-slate-500">Temukan diagram dengan cepat berdasarkan nama.</span>
+                    </div>
+                    
+                    <div class="p-4 bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col items-center text-center">
+                        <div class="w-10 h-10 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mb-3">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                        </div>
+                        <strong class="text-slate-900 block mb-1">Preview</strong>
+                        <span class="text-sm text-slate-500">Lihat gambar diagram tanpa harus keluar dari daftar.</span>
+                    </div>
+
+                    <div class="p-4 bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col items-center text-center">
+                        <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-3">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        </div>
+                        <strong class="text-slate-900 block mb-1">Edit</strong>
+                        <span class="text-sm text-slate-500">Buka kembali diagram lama ke halaman editor utama.</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 7. RAG -->
+            <section id="rag" class="bg-gradient-to-br from-emerald-50 to-teal-50 p-6 lg:p-8 rounded-2xl shadow-sm border border-emerald-100 mb-8 scroll-mt-24 lg:scroll-mt-12">
+                <h2 class="text-2xl font-bold text-emerald-900 mb-6 flex items-center gap-3 border-b border-emerald-200/60 pb-4">
+                    <span class="bg-emerald-600 text-white w-10 h-10 rounded-xl flex items-center justify-center text-lg shadow-sm">7</span>
+                    Pustaka Dukungan RAG
+                </h2>
+                <p class="text-emerald-800 mb-5 font-medium">Fitur hebat untuk memberi AI konteks spesifik dari data internal perusahaan/proyek Anda:</p>
+                
+                <div class="bg-white/60 backdrop-blur-sm rounded-xl p-5 border border-emerald-200/50">
+                    <ol class="list-decimal list-inside space-y-3 text-slate-700 ml-2">
+                        <li>Buka halaman <strong class="font-semibold text-emerald-800">Pustaka Dokumen RAG</strong> di aplikasi.</li>
+                        <li>Unggah file <code class="bg-slate-100 text-rose-600 px-1.5 py-0.5 rounded text-xs">PDF</code> atau <code class="bg-slate-100 text-rose-600 px-1.5 py-0.5 rounded text-xs">TXT</code>. Sistem akan melakukan "Vektorisasi" dokumen ke database lokal.</li>
+                        <li>Balik ke halaman AI Editor, buka Chat, dan klik ikon <strong class="font-semibold text-emerald-800">Dokumen</strong>.</li>
+                        <li>Pilih dokumen Anda sebagai referensi agar jawaban AI 100% sesuai dengan data dokumen tersebut.</li>
+                    </ol>
+                </div>
+            </section>
+
+            <footer class="text-center text-slate-400 text-sm mt-16 mb-8 pt-8 border-t border-slate-200">
+                &copy; 2026 Mermaid AI Workspace - Dokumentasi Mandiri
+            </footer>
+        </div>
+    </main>
+
+    <!-- Script for interaction -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            // Toggle Sidebar functions
+            const openSidebar = () => {
+                sidebar.classList.remove('-translate-x-full');
+                backdrop.classList.remove('hidden');
+                document.body.style.overflow = 'hidden'; // Prevent body scroll
+            };
+
+            const closeSidebar = () => {
+                sidebar.classList.add('-translate-x-full');
+                backdrop.classList.add('hidden');
+                document.body.style.overflow = ''; // Restore body scroll
+            };
+
+            // Event Listeners
+            mobileMenuBtn.addEventListener('click', openSidebar);
+            closeSidebarBtn.addEventListener('click', closeSidebar);
+            backdrop.addEventListener('click', closeSidebar);
+
+            // Close sidebar when a link is clicked (on mobile)
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth < 1024) { // lg breakpoint in tailwind
+                        closeSidebar();
+                    }
+                });
+            });
+
+            // Optional: Highlight active section on scroll
+            const observerOptions = {
+                root: null,
+                rootMargin: '-20% 0px -60% 0px',
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        // Reset all links
+                        navLinks.forEach(link => {
+                            link.classList.remove('bg-blue-50', 'text-blue-700', 'font-bold');
+                            link.classList.add('text-slate-600');
+                        });
+                        // Highlight active link
+                        const activeLink = document.querySelector(`.nav-link[href="#${id}"]`);
+                        if(activeLink) {
+                            activeLink.classList.remove('text-slate-600');
+                            activeLink.classList.add('bg-blue-50', 'text-blue-700', 'font-bold');
+                        }
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all sections
+            document.querySelectorAll('section[id]').forEach((section) => {
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
+</html>
