@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dokumentasi AI Mermaid JS</title>
+    
+    <!-- Tailwind CSS with Typography Plugin -->
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    
+    <!-- Marked.js for parsing Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- Prism.js for Syntax Highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+
+    <style>
+        /* Custom scrollbar for sidebar */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .nav-link.active {
+            background-color: #eff6ff;
+            color: #2563eb;
+            border-right: 4px solid #2563eb;
+            font-weight: 600;
+        }
+        /* Prevents content shift when scrollbar appears */
+        html {
+            scrollbar-gutter: stable;
+        }
+    </style>
+</head>
+<body class="bg-white text-slate-800 h-screen flex flex-col lg:flex-row overflow-hidden font-sans">
+
+    <!-- Mobile Header (Visible on HP and Tablet) -->
+    <header class="lg:hidden flex items-center justify-between p-4 bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="flex items-center gap-2">
+            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <span class="font-bold text-slate-800 tracking-tight">Mermaid Docs</span>
+        </div>
+        <button id="mobile-menu-btn" class="p-2 rounded-md hover:bg-slate-100 text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="Toggle Menu">
+            <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+            <svg id="close-icon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+    </header>
+
+    <!-- Sidebar (Drawer on HP/Tablet, Fixed on PC) -->
+    <aside id="sidebar" class="bg-slate-50 w-72 h-full border-r border-slate-200 flex flex-col fixed inset-y-0 left-0 transform -translate-x-full lg:translate-x-0 lg:static transition-transform duration-300 ease-in-out z-40">
+        <!-- Sidebar Logo (Desktop Only) -->
+        <div class="p-8 hidden lg:block">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-blue-600 rounded-lg">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <h1 class="font-extrabold text-xl text-slate-800 tracking-tight">Mermaid Docs</h1>
+            </div>
+        </div>
+        
+        <nav class="flex-1 overflow-y-auto pt-4 lg:pt-0">
+            <div class="px-6 mb-8">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-3 px-2">Mulai</p>
+                <ul class="space-y-1">
+                    <li>
+                        <a href="#" onclick="loadPage('instalasi', this)" class="nav-link active flex items-center px-4 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all duration-200">
+                            Instalasi & Deployment
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="px-6 mb-8">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-3 px-2">Log Aktivitas</p>
+                <ul class="space-y-1">
+                    <li>
+                        <a href="#" onclick="loadPage('keterangan_instalasi', this)" class="nav-link flex items-center px-4 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all duration-200">
+                            Keterangan Instalasi
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="px-6 mb-8">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-3 px-2">Troubleshooting</p>
+                <ul class="space-y-1">
+                    <li>
+                        <a href="#" onclick="loadPage('error_module', this)" class="nav-link flex items-center px-4 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all duration-200">
+                            ModuleNotFoundError
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        
+        <div class="p-6 border-t border-slate-200">
+            <div class="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200 shadow-sm">
+                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                <span class="text-xs font-medium text-slate-600 tracking-wide">Server v1.0.1 - Online</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Overlay for mobile sidebar -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-slate-900/40 z-30 opacity-0 pointer-events-none lg:hidden backdrop-blur-sm transition-opacity duration-300"></div>
+
+    <!-- Main Content -->
+    <main class="flex-1 h-full overflow-y-auto bg-white scroll-smooth">
+        <div class="max-w-4xl mx-auto px-6 py-8 md:px-12 md:py-16 lg:px-16 lg:py-20">
+            <!-- Breadcrumbs (Desktop Only) -->
+            <nav class="hidden md:flex items-center gap-2 text-sm text-slate-400 mb-8" aria-label="Breadcrumb">
+                <span>Docs</span>
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"></path></svg>
+                <span id="breadcrumb-active" class="text-slate-600 font-medium">Instalasi</span>
+            </nav>
+
+            <!-- Content Area -->
+            <article id="content-area" class="prose prose-slate prose-lg max-w-none 
+                prose-headings:tracking-tight prose-headings:font-bold
+                prose-a:text-blue-600 hover:prose-a:text-blue-500 
+                prose-pre:bg-slate-900 prose-pre:shadow-xl prose-pre:rounded-xl prose-pre:my-8
+                prose-img:rounded-xl prose-img:shadow-lg">
+                <!-- Content will be injected here -->
+            </article>
+
+            <!-- Footer Pagination (Mockup) -->
+            <div class="mt-16 pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between gap-4">
+                <p class="text-sm text-slate-500">Terakhir diperbarui: April 2024</p>
+                <div class="flex gap-4">
+                    <a href="https://github.com/unobengkel/aimermaidjs" target="_blank" class="text-sm font-medium text-blue-600 hover:underline">GitHub Repository</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const docsData = {
+            instalasi: `
+# Panduan Instalasi & Deployment
+
+Langkah-langkah menyiapkan lingkungan server untuk menjalankan aplikasi **AI Mermaid JS** menggunakan Virtual Environment dan PM2.
+
+## 1. Persiapan & Instalasi
+Jalankan perintah berikut di terminal server Anda:
+
+\`\`\`bash
+# Clone repositori dari GitHub
+git clone https://github.com/unobengkel/aimermaidjs.git
+cd aimermaidjs
+
+# Membuat Virtual Environment (VENV)
+python3 -m venv venv
+
+# Aktivasi VENV
+source venv/bin/activate
+
+# Install semua dependensi
+pip install -r requirements.txt
+\`\`\`
+
+## 2. Pengujian Lokal
+Gunakan perintah ini untuk memastikan aplikasi berjalan (Mode Dev):
+
+\`\`\`bash
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+\`\`\`
+> **Note:** Ketik \`deactivate\` untuk keluar dari virtual environment setelah selesai mencoba.
+
+## 3. Deployment Produksi dengan PM2
+Agar aplikasi berjalan otomatis di background, gunakan **PM2**.
+
+**Perintah Start:**
+\`\`\`bash
+pm2 start venv/bin/python --name "mermaid-api" -- -m uvicorn main:app --host 0.0.0.0 --port 8000
+\`\`\`
+
+**Manajemen PM2:**
+- **Log:** \`pm2 logs mermaid-api\`
+- **Status:** \`pm2 status\`
+- **Simpan Konfigurasi:** \`pm2 save\`
+            `,
+
+            keterangan_instalasi: `
+# Keterangan Instalasi Server
+
+Laporan status instalasi aplikasi pada server produksi.
+
+### Informasi Deployment
+- **Lokasi:** Sumopod
+- **Tanggal:** 14 April 2026
+- **Jam:** 19:02 WIB
+- **Status:** ✅ Sukses
+
+### Detail Instalasi
+Berikut adalah catatan teknis mengenai langkah yang telah diselesaikan:
+1. **Environment:** Berhasil menggunakan Python Virtual Environment (\`venv\`) untuk isolasi library.
+2. **Dependensi:** Berhasil melakukan penambahan paket-paket melalui \`requirements.txt\`.
+3. **Pustaka LangChain:** Ditemukan kendala pada paket \`langchain_text_splitters\` yang memerlukan penyesuaian import manual di file \`rag_handler.py\`.
+
+> Catatan: Untuk detail perbaikan error LangChain, silakan merujuk pada menu **Troubleshooting > ModuleNotFoundError**.
+            `,
+
+            error_module: `
+# Solusi: ModuleNotFoundError
+
+Kesalahan umum yang terjadi karena perbedaan struktur paket pada **LangChain v1.x**. Meskipun sudah terinstal, aplikasi mungkin gagal mengenali modul karena namespace yang berubah.
+
+## Deskripsi Error
+\`\`\`text
+ModuleNotFoundError: No module named 'langchain.text_splitter'
+\`\`\`
+
+## Langkah Perbaikan
+
+### 1. Perbarui Import di rag_handler.py
+Ubah baris ke-7 pada file tersebut:
+
+**Sebelumnya:**
+\`\`\`python
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+\`\`\`
+
+**Sesudah:**
+\`\`\`python
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+\`\`\`
+
+### 2. Gunakan Prefix Python -m
+Jika masih bermasalah saat menjalankan secara manual, gunakan cara pemanggilan modul:
+
+\`\`\`bash
+python -m uvicorn main:app --host 0.0.0.0 --port 8000
+\`\`\`
+
+> **Informasi:** Metode \`python -m\` menjamin binary yang dipanggil sesuai dengan interpreter di dalam Virtual Environment Anda.
+            `
+        };
+
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const mobileBtn = document.getElementById('mobile-menu-btn');
+        const menuIcon = document.getElementById('menu-icon');
+        const closeIcon = document.getElementById('close-icon');
+        const contentArea = document.getElementById('content-area');
+        const breadcrumbActive = document.getElementById('breadcrumb-active');
+
+        function loadPage(pageKey, element = null) {
+            // Render Content
+            contentArea.innerHTML = marked.parse(docsData[pageKey]);
+            Prism.highlightAll();
+
+            // Update UI State
+            if (element) {
+                document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+                element.classList.add('active');
+                breadcrumbActive.textContent = element.textContent.trim();
+            }
+
+            // Mobile specific closing
+            if (window.innerWidth < 1024) {
+                toggleMobileMenu(false);
+            }
+            
+            // Scroll reset
+            document.querySelector('main').scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleMobileMenu(isOpen = null) {
+            const isNowOpen = isOpen !== null ? isOpen : sidebar.classList.contains('-translate-x-full');
+            
+            if (isNowOpen) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('pointer-events-none', 'opacity-0');
+                overlay.classList.add('opacity-100');
+                menuIcon.classList.add('hidden');
+                closeIcon.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+                overlay.classList.remove('opacity-100');
+                menuIcon.classList.remove('hidden');
+                closeIcon.classList.add('hidden');
+            }
+        }
+
+        mobileBtn.addEventListener('click', () => toggleMobileMenu());
+        overlay.addEventListener('click', () => toggleMobileMenu(false));
+
+        // Initial Load
+        window.onload = () => {
+            loadPage('instalasi');
+        };
+    </script>
+</body>
+</html>
