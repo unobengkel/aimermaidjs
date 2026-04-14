@@ -5,6 +5,7 @@ chromadb
 langchain
 langchain-huggingface
 langchain-community
+langchain-text-splitters
 pypdf
 python-multipart
 openai
