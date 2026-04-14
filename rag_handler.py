@@ -4,7 +4,12 @@ sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 import os
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+#--------------------------------------------------------------------------#
+# OPSI A (Lama/Legacy)
+#from langchain.text_splitter import RecursiveCharacterTextSplitter
+# OPSI B (Baru/Modular - Direkomendasikan) - (v0.1+)
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+#--------------------------------------------------------------------------#
 from langchain_huggingface import HuggingFaceEmbeddings
 import chromadb
 
